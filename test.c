@@ -54,7 +54,7 @@ int main() {
 	showMap(m);
 	mDel(m,"bye");
 	showMap(m);
-	printf("%ld\n", (long)mGet(m,"hello"));
+	printf("%zd\n", (size_t)mGet(m,"hello"));
 }
 
 

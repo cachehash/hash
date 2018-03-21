@@ -86,10 +86,10 @@ void unchainBucketRef(Map* m, Bucket* b) {
 	}
 	free(b);
 }
-void chainBucketRef(Map* m, Bucket* b, int needFreeOnDestroy) {
+void chainBucketRef(Map* m, Bucket* b, size_t needFreeOnDestroy) {
 	Bucket* n = newLink();
 	n->val = b;
-	n->key = (void*)(long)needFreeOnDestroy;
+	n->key = (void*)needFreeOnDestroy;
 	b->listLink = n;
 	n->link = m->link;
 	if (m->link) {
