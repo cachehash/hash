@@ -19,7 +19,7 @@ void showMap(Map *m) {
 	printf("%d\n\n",m->size);
 }
 int main() {
-	Map* m = newStrMap(2);
+	Map* m = newStrMap(8192);
 	int x = m->key.hashCode("hello");
 	printf("%d\n", x);
 	mPut(m,"hello", "hi");
