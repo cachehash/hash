@@ -1,6 +1,5 @@
 #ifndef HASH_H
 #define HASH_H
-int hashCode(char*);
 
 typedef struct Bucket {
 	struct Bucket*		link;
@@ -10,7 +9,7 @@ typedef struct Bucket {
 } Bucket;
 
 typedef int (*CmpFunc)(void*, void*);
-typedef int (*HashFunc)(void*);
+typedef unsigned int (*HashFunc)(void*);
 typedef void* (*DupFunc)(void*);
 typedef void (*FreeFunc)(void*);
 typedef struct DataHandlr {
