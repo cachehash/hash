@@ -9,7 +9,7 @@ void showMap(Map *m) {
 		for (Bucket* b = &m->buckets[i]; b; b=b->link) {
 			if (b->key) {
 				printed = 1;
-				printf("%s->", b->key);
+				printf("%s->", (char*)b->key);
 			}
 		}
 		if (printed) {
@@ -41,7 +41,7 @@ int main() {
 	void* vals[m->size];
 	mGetKeys(m, vals);
 	for (int x = 0; x < m->size; x++) {
-		printf("%s is mapped to %s.\n", vals[x], mGet(m, vals[x]));
+		printf("%s is mapped to %s.\n", (char*) vals[x], (char*) mGet(m, vals[x]));
 	}
 	destroyMap(m);
 	return 0;
