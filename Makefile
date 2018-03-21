@@ -1,6 +1,8 @@
 .PHONY: all
 
 LDLIBS=-L. -lhash
+CFLAGS+=-std=gnu99 -O0 -g
+
 CFLAGS=-Og -g
 
 all: main
