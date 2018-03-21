@@ -30,6 +30,7 @@ typedef struct Map {
 Bucket* newLink();
 Map* newMap(int cap, DataHandlr key);
 Map* newStrMap(int cap);
+Map* newIntMap(int cap);
 Map* newStrRefMap(int cap);
 void mPut(Map* m, void *key, void* val);
 void* mGet(Map* m, void *key);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stddef.h>
 int stringHashCode(char *str) {
 	int h = 0;
 	for (int i = 0; str[i]; i++) {
@@ -17,20 +18,40 @@ Bucket* newLink() {
 int stringCmp(void *a, void *b) {
 	return strcmp(a,b) == 0;
 }
+int thinCmp(void* a, void*b) {
+	return a == b;
+}
 void dummyFree(void* v) {
 }
 void* dummyDup(void* v) {
 	return v;
 }
 
+int numHashCode(void* v) {
+	ptrdiff_t n = (ptrdiff_t) v;
+	int ret = 0;
+	while (n) {
+		ret ^= n;
+		n >>= sizeof(int)*8;
+	}
+	return ret;
+}
+
 Map* newMap(int cap, DataHandlr key) {
 	Map* m = calloc(sizeof(Map)+cap*sizeof(Bucket), 1);
 	m->cap = cap;
-
 	m->key = key;
 	m->val.free = dummyFree;
 	m->val.dup = dummyDup;
 	return m;
+}
+Map* newIntMap(int cap) {
+	DataHandlr dh;
+	dh.hashCode = (HashFunc) numHashCode;
+	dh.cmp = thinCmp;
+	dh.dup = dummyDup;
+	dh.free = dummyFree;
+	return newMap(cap, dh);
 }
 
 Map* newStrMap(int cap) {
