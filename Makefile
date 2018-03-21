@@ -4,13 +4,13 @@ LDLIBS+=-L. -lhash
 CFLAGS+=-std=gnu99 -O0 -g
 
 
-all: main
+all: libhash.a
 
-main.o:	test.o libhash.a
-	cp test.o main.o
+test.c: libhash.a
+	
 	
 libhash.a: hash.o
 	ar rcs $@ $^
 
 clean:
-	rm -f *.a *.o main
+	rm -f *.a *.o test
