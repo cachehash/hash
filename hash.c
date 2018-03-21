@@ -45,6 +45,12 @@ int intCmp(void* a, void* b) {
 	int *y = b;
 	return *x == *y;
 }
+void* intDup(void* v) {
+	int* p = v;
+	int* ret = malloc(sizeof(int));
+	*ret = *p;
+	return ret;
+}
 
 Map* newMap(int cap, DataHandlr key) {
 	Map* m = calloc(sizeof(Map)+cap*sizeof(Bucket), 1);
@@ -66,8 +72,8 @@ Map* newIntPtrMap(int cap) {
 	DataHandlr dh;
 	dh.hashCode = intHashCode;
 	dh.cmp = intCmp;
-	dh.dup = dummyDup;
-	dh.free = dummyFree;
+	dh.dup = intDup;
+	dh.free = free;
 	return newMap(cap, dh);
 }
 
