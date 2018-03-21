@@ -1,7 +1,7 @@
 .PHONY: all
 
 LDLIBS+=-L. -lhash
-CFLAGS+=-std=gnu99 -O0 -g
+CFLAGS+=-std=gnu99 -O3 -g
 
 
 all: libhash.a
