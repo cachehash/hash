@@ -25,7 +25,7 @@ typedef struct Map {
 	Bucket*		link;
 	DataHandlr	key;
 	DataHandlr	val;
-	Bucket		buckets[0];
+	Bucket		buckets[];
 } Map;
 Bucket* newLink();
 Map* newMap(int cap, DataHandlr key);
