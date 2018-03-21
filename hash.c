@@ -28,7 +28,7 @@ void* dummyDup(void* v) {
 }
 
 int numHashCode(void* v) {
-	ptrdiff_t n = (ptrdiff_t) v;
+	size_t n = (size_t) v;
 	int ret = 0;
 	while (n) {
 		ret ^= n;
