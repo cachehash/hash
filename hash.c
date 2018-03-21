@@ -36,6 +36,15 @@ int numHashCode(void* v) {
 	}
 	return ret;
 }
+unsigned int intHashCode(void* v) {
+	int* p = v;
+	return *p;
+}
+int intCmp(void* a, void* b) {
+	int *x = a;
+	int *y = b;
+	return *x == *y;
+}
 
 Map* newMap(int cap, DataHandlr key) {
 	Map* m = calloc(sizeof(Map)+cap*sizeof(Bucket), 1);
@@ -49,6 +58,14 @@ Map* newIntMap(int cap) {
 	DataHandlr dh;
 	dh.hashCode = (HashFunc) numHashCode;
 	dh.cmp = thinCmp;
+	dh.dup = dummyDup;
+	dh.free = dummyFree;
+	return newMap(cap, dh);
+}
+Map* newIntPtrMap(int cap) {
+	DataHandlr dh;
+	dh.hashCode = intHashCode;
+	dh.cmp = intCmp;
 	dh.dup = dummyDup;
 	dh.free = dummyFree;
 	return newMap(cap, dh);
