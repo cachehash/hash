@@ -4,7 +4,8 @@ int hashCode(char*);
 
 typedef struct Bucket {
 	struct Bucket*		link;
-	char*			key;
+	struct Bucket*		listLink;
+	void*			key;
 	void*			val;
 } Bucket;
 
@@ -19,15 +20,26 @@ typedef struct DataHandlr {
 	FreeFunc	free;
 } DataHandlr;
 typedef struct Map {
+	int		cap;
 	int		size;
+	Bucket*		link;
 	DataHandlr	key;
+	DataHandlr	val;
 	Bucket		buckets[0];
 } Map;
 Bucket* newLink();
-Map* newMap(int size, DataHandlr key);
-Map* newStrMap(int size);
-void* mPut(Map* m, void *key, void* val);
+Map* newMap(int cap, DataHandlr key);
+Map* newStrMap(int cap);
+Map* newStrRefMap(int cap);
+void mPut(Map* m, void *key, void* val);
 void* mGet(Map* m, void *key);
-void* mDel(Map* m, void *key);
+void mDel(Map* m, void *key);
+
+void mGetKeys(Map* m, void **array);
+void destroyMap(Map* m);
+
+
+void dummyFree(void*);
+void* dummyDup(void*);
 
 #endif

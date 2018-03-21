@@ -23,55 +23,88 @@ void* dummyDup(void* v) {
 	return v;
 }
 
-Map* newMap(int size, DataHandlr key) {
-	Map* m = calloc(sizeof(Map)+size*sizeof(Bucket), 1);
+Map* newMap(int cap, DataHandlr key) {
+	Map* m = calloc(sizeof(Map)+cap*sizeof(Bucket), 1);
+	m->cap = cap;
+
 	m->key = key;
-	m->size = size;
+	m->val.free = dummyFree;
+	m->val.dup = dummyDup;
 	return m;
 }
 
-Map* newStrMap(int size) {
+Map* newStrMap(int cap) {
 	DataHandlr dh;
 	dh.hashCode = (HashFunc) stringHashCode;
 	dh.cmp = stringCmp;
 	dh.dup = (DupFunc) strdup;
 	dh.free = free;
-	return newMap(size, dh);
+	return newMap(cap, dh);
 }
-Map* newStrRefMap(int size) {
+Map* newStrRefMap(int cap) {
 	DataHandlr dh;
 	dh.hashCode = (HashFunc) stringHashCode;
 	dh.cmp = stringCmp;
 	dh.dup = dummyDup;
 	dh.free = dummyFree;
-	return newMap(size, dh);
+	return newMap(cap, dh);
 }
 
-void* mPut(Map* m, void *key, void* val){
-	int i = m->key.hashCode(key) % m->size;
+void unchainBucketRef(Map* m, Bucket* b) {
+	b = b->listLink;
+	if (!b) {
+		printf("ERROR: b is null!\n");
+	}
+	Bucket* next = b->link;
+	Bucket* prev = b->listLink;
+	if (next) {
+		next->listLink = b->listLink;
+	}
+	if (prev) {
+		prev->link = b->link;
+	}
+	free(b);
+}
+void chainBucketRef(Map* m, Bucket* b, int needFreeOnDestroy) {
+	Bucket* n = newLink();
+	n->val = b;
+	n->key = (void*)(long)needFreeOnDestroy;
+	b->listLink = n;
+	n->link = m->link;
+	if (m->link) {
+		m->link->listLink = n;
+	}
+	m->link = n;
+}
+void mPut(Map* m, void *key, void* val){
+	int i = m->key.hashCode(key) % m->cap;
 	Bucket* b = &m->buckets[i];
 	Bucket* bprev = NULL;
+	val = m->val.dup(val);
 	while (b != NULL) {
 		if (b->key == NULL) {
 			b->key = m->key.dup(key);
 			b->val = val;
-			return NULL;
+			chainBucketRef(m, b, 0);
+			m->size++;
+			return;
 		} else if (m->key.cmp(b->key, key)) {
-			void* ret = b->val;
+			m->val.free(b->val);
 			b->val = val;
-			return ret;
+			return;
 		}
 		bprev = b;
 		b = b->link;
 	}
 	b = bprev->link = newLink();
+	chainBucketRef(m, b, 1);
 	b->key = m->key.dup(key);
 	b->val = val;
-	return NULL;
+	m->size++;
 }
 
 void* mGet(Map* m, void *key) {
-	int i = m->key.hashCode(key) % m->size;
+	int i = m->key.hashCode(key) % m->cap;
 	Bucket* b = &m->buckets[i];
 	while (b != NULL) {
 		if (b->key != NULL && m->key.cmp(b->key, key)) {
@@ -82,20 +115,24 @@ void* mGet(Map* m, void *key) {
 	return NULL;
 }
 
-void* mDel(Map* m, void *key) {
-	int i = m->key.hashCode(key) % m->size;
+void mDel(Map* m, void *key) {
+	int i = m->key.hashCode(key) % m->cap;
 	Bucket *buk = &m->buckets[i];
 	Bucket *b = buk;
 	Bucket* bprev = b;
 	while (b != NULL) {
 		if (b->key != NULL && m->key.cmp(b->key, key)) {
 			void* ret = b->val;
+			unchainBucketRef(m, b);
 			m->key.free(b->key);
 			bprev->link = b->link;
 			if (b == buk) {
 				if (b->link != NULL) {
 					Bucket *blink = b->link;
 					memcpy(b, b->link, sizeof(*b));
+					//we moved where blink is in memory, so update reference
+					b->listLink->val = b;
+					b->listLink->key = (void*)0;
 					free(blink);
 				} else {
 					memset(b, 0, sizeof(*b));
@@ -103,10 +140,33 @@ void* mDel(Map* m, void *key) {
 			} else {
 				free(b);
 			}
-			return ret;
+			m->size--;
+			m->val.free(ret);
+			return;
 		}
 		bprev = b;
 		b = b->link;
 	}
-	return NULL;
+}
+
+void mGetKeys(Map* m, void **array) {
+	int x = m->size;
+	for (Bucket* b = m->link; b; b = b->link) {
+		Bucket* buk = b->val;
+		array[--x] = buk->key;
+	}
+}
+void destroyMap(Map* m) {
+	for (Bucket* b = m->link; b;) {
+		Bucket* blink = b->link;;
+		Bucket* buk = b->val;
+		m->key.free(buk->key);
+		m->val.free(buk->val);
+		if (b->key) {
+			free(buk);
+		}
+		free(b);
+		b = blink;
+	}
+	free(m);
 }

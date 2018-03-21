@@ -4,28 +4,48 @@
 #include <string.h>
 
 void showMap(Map *m) {
-	for (Bucket* b = m->buckets; b; b=b->link) {
-		printf("%s->", b->key);
+	for (int i = 0; i < m->cap; i++) {
+		int printed = 0;
+		for (Bucket* b = &m->buckets[i]; b; b=b->link) {
+			if (b->key) {
+				printed = 1;
+				printf("%s->", b->key);
+			}
+		}
+		if (printed) {
+			printf("\n");
+		}
 	}
-	printf("\n");
+	printf("%d\n\n",m->size);
 }
 int main() {
-	Map* m = newStrMap(1);
+	Map* m = newStrMap(2);
 	int x = m->key.hashCode("hello");
 	printf("%d\n", x);
-	mPut(m,"hello", strdup("hi"));
-	mPut(m,"bye", strdup("byzies"));
-	mPut(m, "a", strdup("w"));
-	mPut(m, "b", strdup("x"));
-	mPut(m, "c", strdup("y"));
-	mPut(m, "d", strdup("z"));
+	mPut(m,"hello", "hi");
+	mPut(m,"bye", "byzies");
+	mPut(m, "a", "w");
+	mPut(m, "b", "x");
+	mPut(m, "c", "y");
+	mPut(m, "d", "z");
+	mPut(m, "d", "dead");
 	printf("%s\n", (char*)mGet(m,"hello"));
 	printf("%s\n", (char*)mGet(m,"bye"));
 	showMap(m);
+
 	mDel(m,"hello");
 	showMap(m);
 	mDel(m,"b");
 	showMap(m);
+
+	void* vals[m->size];
+	mGetKeys(m, vals);
+	for (int x = 0; x < m->size; x++) {
+		printf("%s is mapped to %s.\n", vals[x], mGet(m, vals[x]));
+	}
+	destroyMap(m);
+	return 0;
+
 	mDel(m,"d");
 	showMap(m);
 	mDel(m,"c");
