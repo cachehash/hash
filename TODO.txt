@@ -1,0 +1,2 @@
+must depricate using void pointer's contents directly as keys. Like this, if we map 0->8
+when we look up 0 the code will see that the key is NULL and just return NULL.
